@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 
 interface IDCardEntryProps {
@@ -208,6 +209,21 @@ export const IDCardEntry = ({ onUnlock, isUnlocked }: IDCardEntryProps) => {
             className="drop-shadow-sm"
           />
         </svg>
+      </div>
+
+      {/* Attachment Point - where rope connects to card */}
+      <div 
+        className="absolute transition-all duration-200 ease-out z-10"
+        style={{
+          transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y + 158}px))`,
+          left: '50%',
+          top: '50%'
+        }}
+      >
+        <div className="w-3 h-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full border border-gray-500 shadow-sm relative">
+          <div className="absolute inset-0.5 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full" />
+          <div className="absolute inset-1 bg-gradient-to-br from-gray-200 to-gray-400 rounded-full" />
+        </div>
       </div>
 
       {/* ID Card */}
