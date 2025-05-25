@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 
 interface IDCardEntryProps {
@@ -13,10 +12,32 @@ export const IDCardEntry = ({ onUnlock, isUnlocked }: IDCardEntryProps) => {
   const [isInScanner, setIsInScanner] = useState(false);
   const [ropeOffset, setRopeOffset] = useState({ x: 0, y: 0 });
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const cardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastPositionRef = useRef({ x: 0, y: 0 });
   const animationFrameRef = useRef<number>();
+
+  // Connection check simulation
+  useEffect(() => {
+    const checkConnection = async () => {
+      setConnectionStatus('checking');
+      
+      // Simulate connection check delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate connection success (you can add real connection logic here)
+      try {
+        // Mock connection check - replace with real API call if needed
+        const isOnline = navigator.onLine;
+        setConnectionStatus(isOnline ? 'connected' : 'error');
+      } catch (error) {
+        setConnectionStatus('error');
+      }
+    };
+
+    checkConnection();
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -155,126 +176,225 @@ export const IDCardEntry = ({ onUnlock, isUnlocked }: IDCardEntryProps) => {
     };
   }, [isDragging, isInScanner]);
 
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case 'checking':
+        return 'Establishing secure connection...';
+      case 'connected':
+        return 'Drag the ID card to the scanner to access the portfolio';
+      case 'error':
+        return 'Connection issue detected. Please try again.';
+      default:
+        return 'Drag the ID card to the scanner to access the portfolio';
+    }
+  };
+
+  const getConnectionIcon = () => {
+    switch (connectionStatus) {
+      case 'checking':
+        return '⏳';
+      case 'connected':
+        return '🔒';
+      case 'error':
+        return '⚠️';
+      default:
+        return '🔒';
+    }
+  };
+
   return (
     <div ref={containerRef} className="min-h-screen flex items-center justify-center relative">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-radial from-primary-100/50 via-transparent to-transparent animate-pulse" />
       
-      {/* Instructions */}
-      <div className="absolute top-1/4 text-center">
+      {/* Enhanced Welcome Section with Connection Status */}
+      <div className="absolute top-1/4 text-center max-w-2xl mx-auto px-6">
         <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
           Welcome
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
-          Drag the ID card to the scanner to access the portfolio
+        
+        {/* Connection Status Indicator */}
+        <div className={`flex items-center justify-center gap-3 mb-6 transition-all duration-500 ${
+          connectionStatus === 'connected' ? 'text-green-600' : 
+          connectionStatus === 'error' ? 'text-red-500' : 'text-blue-500'
+        }`}>
+          <div className={`text-2xl ${connectionStatus === 'checking' ? 'animate-spin' : 'animate-bounce'}`}>
+            {getConnectionIcon()}
+          </div>
+          <div className="text-sm font-medium uppercase tracking-wider">
+            {connectionStatus === 'checking' && 'Connecting...'}
+            {connectionStatus === 'connected' && 'Secure Connection'}
+            {connectionStatus === 'error' && 'Connection Failed'}
+          </div>
+        </div>
+
+        {/* Connection Progress Bar */}
+        {connectionStatus === 'checking' && (
+          <div className="w-64 mx-auto mb-6">
+            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" 
+                   style={{ width: '70%', animation: 'pulse 1.5s ease-in-out infinite' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Dynamic Instructions */}
+        <p className={`text-lg text-muted-foreground mb-8 transition-all duration-500 ${
+          connectionStatus === 'connected' ? 'opacity-100' : 'opacity-60'
+        }`}>
+          {getConnectionStatusText()}
         </p>
-      </div>
 
-      {/* Scanner Zone */}
-      <div className={`scanner-zone absolute bottom-20 left-1/2 transform -translate-x-1/2 w-80 h-48 rounded-xl flex items-center justify-center transition-all duration-300 ${
-        isInScanner 
-          ? 'bg-primary/20 border-2 border-primary shadow-lg shadow-primary/50 scale-105' 
-          : 'bg-card/50 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50'
-      }`}>
-        <div className="text-center">
-          <div className={`text-2xl mb-2 transition-all duration-300 ${isInScanner ? 'animate-bounce' : ''}`}>
-            {isInScanner ? '✨' : '🔍'}
+        {/* System Status Indicators */}
+        <div className="flex justify-center gap-6 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-500 animate-pulse' : 
+              connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+            }`} />
+            <span>Security Protocol</span>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {isInScanner ? 'Release to unlock!' : 'Drop ID card here'}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-500 animate-pulse' : 
+              connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+            }`} />
+            <span>Access Control</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-500 animate-pulse' : 
+              connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+            }`} />
+            <span>Portfolio Ready</span>
           </div>
         </div>
       </div>
 
-      {/* Improved Lanyard */}
-      <div 
-        className="absolute top-0 left-1/2 transform -translate-x-1/2 transition-all duration-200 ease-out"
-        style={{
-          transform: `translate(calc(-50% + ${ropeOffset.x}px), ${ropeOffset.y}px)`,
-        }}
-      >
-        <svg width="4" height="160" className="lanyard">
-          <defs>
-            <linearGradient id="lanyardGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--muted))" />
-              <stop offset="50%" stopColor="hsl(var(--muted-foreground))" />
-              <stop offset="100%" stopColor="hsl(var(--muted))" />
-            </linearGradient>
-          </defs>
-          <path
-            d={`M2,0 Q${2 + ropeOffset.x * 0.5},${80 + ropeOffset.y * 0.5} 2,160`}
-            stroke="url(#lanyardGradient)"
-            strokeWidth="3"
-            fill="none"
-            className="drop-shadow-sm"
-          />
-        </svg>
-      </div>
-
-      {/* Attachment Point - where rope connects to card */}
-      <div 
-        className="absolute transition-all duration-200 ease-out z-10"
-        style={{
-          transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y + 158}px))`,
-          left: '50%',
-          top: '50%'
-        }}
-      >
-        <div className="w-3 h-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full border border-gray-500 shadow-sm relative">
-          <div className="absolute inset-0.5 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full" />
-          <div className="absolute inset-1 bg-gradient-to-br from-gray-200 to-gray-400 rounded-full" />
-        </div>
-      </div>
-
-      {/* ID Card */}
-      <div
-        ref={cardRef}
-        className={`id-card w-80 h-48 rounded-xl cursor-grab active:cursor-grabbing select-none transition-all duration-300 ${
-          isDragging ? 'scale-105 shadow-2xl z-50' : 'animate-swing hover:scale-102'
-        } ${isUnlocked ? 'animate-unlock' : ''}`}
-        style={{
-          transform: `translate(${position.x}px, ${position.y}px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-          transformStyle: 'preserve-3d',
-          filter: isDragging ? 'brightness(1.1)' : 'none',
-        }}
-        onMouseDown={handleMouseDown}
-      >
-        <div className="h-full p-6 flex flex-col justify-between relative overflow-hidden">
-          {/* Header with Company Title and AS Circle */}
-          <div className="flex justify-between items-start">
-            <div className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Professional Portfolio
+      {/* Scanner Zone - Only show when connected */}
+      {connectionStatus === 'connected' && (
+        <div className={`scanner-zone absolute bottom-20 left-1/2 transform -translate-x-1/2 w-80 h-48 rounded-xl flex items-center justify-center transition-all duration-300 ${
+          isInScanner 
+            ? 'bg-primary/20 border-2 border-primary shadow-lg shadow-primary/50 scale-105' 
+            : 'bg-card/50 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50'
+        }`}>
+          <div className="text-center">
+            <div className={`text-2xl mb-2 transition-all duration-300 ${isInScanner ? 'animate-bounce' : ''}`}>
+              {isInScanner ? '✨' : '🔍'}
             </div>
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AS</span>
+            <div className="text-sm text-muted-foreground">
+              {isInScanner ? 'Release to unlock!' : 'Drop ID card here'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Retry Button for connection errors */}
+      {connectionStatus === 'error' && (
+        <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2">
+          <button 
+            onClick={() => setConnectionStatus('checking')}
+            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
+      {/* Lanyard and ID Card - Only show when connected */}
+      {connectionStatus === 'connected' && (
+        <>
+          {/* Improved Lanyard */}
+          <div 
+            className="absolute top-0 left-1/2 transform -translate-x-1/2 transition-all duration-200 ease-out"
+            style={{
+              transform: `translate(calc(-50% + ${ropeOffset.x}px), ${ropeOffset.y}px)`,
+            }}
+          >
+            <svg width="4" height="160" className="lanyard">
+              <defs>
+                <linearGradient id="lanyardGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--muted))" />
+                  <stop offset="50%" stopColor="hsl(var(--muted-foreground))" />
+                  <stop offset="100%" stopColor="hsl(var(--muted))" />
+                </linearGradient>
+              </defs>
+              <path
+                d={`M2,0 Q${2 + ropeOffset.x * 0.5},${80 + ropeOffset.y * 0.5} 2,160`}
+                stroke="url(#lanyardGradient)"
+                strokeWidth="3"
+                fill="none"
+                className="drop-shadow-sm"
+              />
+            </svg>
+          </div>
+
+          {/* Attachment Point - where rope connects to card */}
+          <div 
+            className="absolute transition-all duration-200 ease-out z-10"
+            style={{
+              transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y + 158}px))`,
+              left: '50%',
+              top: '50%'
+            }}
+          >
+            <div className="w-3 h-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full border border-gray-500 shadow-sm relative">
+              <div className="absolute inset-0.5 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full" />
+              <div className="absolute inset-1 bg-gradient-to-br from-gray-200 to-gray-400 rounded-full" />
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="flex items-center gap-4">
-            {/* Photo */}
-            <div className="w-16 h-20 bg-gradient-to-br from-primary-200 to-primary-300 rounded-lg flex items-center justify-center overflow-hidden">
-              <div className="w-12 h-14 bg-gradient-to-br from-gray-300 to-gray-400 rounded-md flex items-center justify-center">
-                <span className="text-gray-600 text-xs">PHOTO</span>
+          {/* ID Card */}
+          <div
+            ref={cardRef}
+            className={`id-card w-80 h-48 rounded-xl cursor-grab active:cursor-grabbing select-none transition-all duration-300 ${
+              isDragging ? 'scale-105 shadow-2xl z-50' : 'animate-swing hover:scale-102'
+            } ${isUnlocked ? 'animate-unlock' : ''}`}
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+              transformStyle: 'preserve-3d',
+              filter: isDragging ? 'brightness(1.1)' : 'none',
+            }}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="h-full p-6 flex flex-col justify-between relative overflow-hidden">
+              {/* Header with Company Title and AS Circle */}
+              <div className="flex justify-between items-start">
+                <div className="text-xs font-semibold text-primary uppercase tracking-wider">
+                  Professional Portfolio
+                </div>
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">AS</span>
+                </div>
               </div>
-            </div>
 
-            {/* Info */}
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-foreground mb-1">ANAND S</h3>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                Freelancer
-              </p>
+              {/* Main Content */}
+              <div className="flex items-center gap-4">
+                {/* Photo */}
+                <div className="w-16 h-20 bg-gradient-to-br from-primary-200 to-primary-300 rounded-lg flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-14 bg-gradient-to-br from-gray-300 to-gray-400 rounded-md flex items-center justify-center">
+                    <span className="text-gray-600 text-xs">PHOTO</span>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-foreground mb-1">ANAND S</h3>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Freelancer
+                  </p>
+                </div>
+              </div>
+
+              {/* Empty bottom area (removed the fields) */}
+              <div></div>
+
+              {/* Holographic Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
             </div>
           </div>
-
-          {/* Empty bottom area (removed the fields) */}
-          <div></div>
-
-          {/* Holographic Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
