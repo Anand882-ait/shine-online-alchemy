@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 
 interface IDCardEntryProps {
@@ -121,7 +120,7 @@ export const IDCardEntry = ({ onUnlock, isUnlocked }: IDCardEntryProps) => {
         onMouseDown={handleMouseDown}
       >
         <div className="h-full p-6 flex flex-col justify-between relative overflow-hidden">
-          {/* Company Logo */}
+          {/* Header with Company Title and AS Circle */}
           <div className="flex justify-between items-start">
             <div className="text-xs font-semibold text-primary uppercase tracking-wider">
               Professional Portfolio
@@ -144,21 +143,13 @@ export const IDCardEntry = ({ onUnlock, isUnlocked }: IDCardEntryProps) => {
             <div className="flex-1">
               <h3 className="text-lg font-bold text-foreground mb-1">ANAND S</h3>
               <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                Full-Stack Developer
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ID: DEV-2024-001
+                Freelancer
               </p>
             </div>
           </div>
 
-          {/* Bottom Info */}
-          <div className="text-xs text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Valid: 2024</span>
-              <span>Access Level: Premium</span>
-            </div>
-          </div>
+          {/* Empty bottom area (removed the fields) */}
+          <div></div>
 
           {/* Holographic Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
